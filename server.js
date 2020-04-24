@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const util = require('util');
-const fs = require('fs').promises;
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
@@ -13,15 +13,9 @@ app.use(bodyParser.json());
 // app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 // some helper functions you can use
-async function readFile(filePath) {
-  return await fs.readFile(filePath, 'utf-8');
-}
-async function writeFile(filePath) {
-  return await fs.writeFile(filePath, 'utf-8');
-}
-async function readDir(dirPath) {
-  return await fs.readDir(dirPath);
-}
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
+const readDir = util.promisify(fs.readdir);
 
 // some more helper functions
 const DATA_DIR = 'data';
