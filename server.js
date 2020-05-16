@@ -50,47 +50,48 @@ app.get('/api/page/:slug', async(req, res) => {
     }
 });
 
-// Get a New Page POST: '/api/page/:slug'
+// add a New Page POST: '/api/page/:slug'
 app.post('/api/page/:slug', async(req, res) => {
-    const filePath = path.join('data', `${req.params.slug}.md`);
-    const text = req.body.body;
-    try {
-        await writeFile(filePath, text);
-        res.json({ status: 'ok' });
-    } catch (e) {
-        res.json({ status: 'error', message: 'could not write page. please try again later.' });
-    }
+    const pages = {
+        page: req.body.page,
+        text: req.body.text
+    };
+    pages.page = req.params.slug;
+    pages.text = req.body.body;
+    const filename = `${pages.page}`;
+    const fullFilename = path.join(DATA_DIR, filename);
+    const text = await writeFile(fullFilename, pages.text);
+    jsonOK(res, text);
 });
 
 //Get all Pages
 app.get('/api/page/all', async(req, res) => {
     const names = await readDir(DATA_DIR);
     console.log(names);
-    jsonOK(res, {});
+    res.json({ status: 'ok', tags: names });
 });
 
 //Get all Tags
 app.get('/api/tags/all', async(req, res) => {
     const names = await readDir(DATA_DIR);
     console.log(names);
-    jsonOK(res, {});
+    res.json({ status: 'ok', tags: names });
 });
 
 // Get Page Names by Tag GET: '/api/tags/:tag'
 app.get('/api/tags/:tag', async(req, res) => {
-    const tagname = `${req.params.tag}`;
-    const fullFilename = path.join(DATA_DIR, tagname);
-    try {
-        const text = await readFile(fullFilename);
-        res.json({ status: 'ok', tag: text });
-    } catch {
-        res.json({ status: 'error', message: 'Tag not found.' });
+    const fileName = req.params.tag;
+    if (fileName === "default") {
+        res.json({ status: 'ok', tag: [fileName], pages: ['home', 'about'] });
+    } else {
+        res.json({ status: 'ok', tag: [fileName], pages: [fileName] });
     }
 });
-//wiki client
+
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
+
 //server env
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Wiki app is running at http://localhost:${port}`));
