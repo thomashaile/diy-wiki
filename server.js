@@ -43,9 +43,11 @@ app.get('/api/page/:slug', async(req, res) => {
     const filePath = path.join('data', `${req.params.slug}.md`);
     try {
         let text = await readFile(filePath, 'utf-8');
-        res.json({ status: 'ok', body: text });
+        //res.json({ status: 'ok', body: text });
+         jsonOK(res, {body: text}); //shortest
     } catch {
-        res.json({ status: 'error', message: 'Page does not exist.' });
+       // res.json({ status: 'error', message: 'Page does not exist.' });
+        jsonError(res,  'Page does not exist.' ); //shortest 
     }
 });
 
@@ -55,11 +57,12 @@ app.post('/api/page/:slug', async(req, res) => {
     try {
         let text = req.body.body;
         await writeFile(filePath, text);
-        res.json({ status: 'ok' });
+         jsonOK(res, {body: text}); //shortest
     } catch {
-        res.json({ status: 'error', message: 'Could not write page.' });
+        jsonError(res,  'Could not write page.' ); //shortest 
     }
 });
+
 
 //Get all Pages - working
 app.get('/api/pages/all', async(req, res) => {
@@ -68,14 +71,14 @@ app.get('/api/pages/all', async(req, res) => {
         let arrPageNames = names.split('.');
         return arrPageNames[0];
     });
-    res.json({ status: 'ok', pages: dir });
+    jsonOK(res, {body: dir}); 
 });
 
 //Get all Tags - working
 app.get('/api/tags/all', async(req, res) => {
     const names = await readDir(DATA_DIR);
     console.log(names);
-    res.json({ status: 'ok', tags: names });
+     jsonOK(res, {body: names});
 });
 
 // Get single tagGET: '/api/tags/:tag'
