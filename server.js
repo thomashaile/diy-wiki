@@ -75,10 +75,22 @@ app.get('/api/pages/all', async(req, res) => {
 });
 
 //Get all Tags - working
+//app.get('/api/tags/all', async(req, res) => {
+    //const names = await readDir(DATA_DIR);
+   // console.log(names);
+    // jsonOK(res, {body: names});
+//});
+
+//Get all tags - scan through the file content and return each match on the TAG
 app.get('/api/tags/all', async(req, res) => {
-    const names = await readDir(DATA_DIR);
-    console.log(names);
-     jsonOK(res, {body: names});
+    let names = await readDir(DATA_DIR);
+    let tags = [];
+    for (const name of names) {
+        const filePath = path.join('data', name);
+        const content = await readFile(filePath, 'utf-8');
+        const matches = content.match(/#(\w+)/gm) || [];
+        tags.push(...matches); }
+    res.json({ status: 'ok', tags });
 });
 
 // Get single tagGET: '/api/tags/:tag'
