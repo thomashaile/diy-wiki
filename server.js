@@ -40,52 +40,61 @@ app.get('/', (req, res) => {
 
 // Get an Existing Page GET: '/api/page/:slug'
 app.get('/api/page/:slug', async(req, res) => {
-    const filename = `${req.params.slug}`;
-    const fullFilename = path.join(DATA_DIR, filename);
+    const filePath = path.join('data', `${req.params.slug}.md`);
     try {
-        const text = await readFile(fullFilename);
+        let text = await readFile(filePath, 'utf-8');
         res.json({ status: 'ok', body: text });
     } catch {
         res.json({ status: 'error', message: 'Page does not exist.' });
     }
 });
 
-// add a New Page POST: '/api/page/:slug'
+// Add a New Page using POST
 app.post('/api/page/:slug', async(req, res) => {
-    const pages = {
-        page: req.body.page,
-        text: req.body.text
-    };
-    pages.page = req.params.slug;
-    pages.text = req.body.body;
-    const filename = `${pages.page}`;
-    const fullFilename = path.join(DATA_DIR, filename);
-    const text = await writeFile(fullFilename, pages.text);
-    jsonOK(res, text);
+    const filePath = path.join('data', `${req.params.slug}.md`);
+    try {
+        let text = req.body.body;
+        await writeFile(filePath, text);
+        res.json({ status: 'ok' });
+    } catch {
+        res.json({ status: 'error', message: 'Could not write page.' });
+    }
 });
 
-//Get all Pages
-app.get('/api/page/all', async(req, res) => {
-    const names = await readDir(DATA_DIR);
-    console.log(names);
-    res.json({ status: 'ok', tags: names });
+//Get all Pages - working
+app.get('/api/pages/all', async(req, res) => {
+    let dir = await readDir('data');
+    dir = dir.map(names => {
+        let arrPageNames = names.split('.');
+        return arrPageNames[0];
+    });
+    res.json({ status: 'ok', pages: dir });
 });
 
-//Get all Tags
+//Get all Tags - working
 app.get('/api/tags/all', async(req, res) => {
     const names = await readDir(DATA_DIR);
     console.log(names);
     res.json({ status: 'ok', tags: names });
 });
 
-// Get Page Names by Tag GET: '/api/tags/:tag'
+// Get single tagGET: '/api/tags/:tag'
 app.get('/api/tags/:tag', async(req, res) => {
-    const fileName = req.params.tag;
-    if (fileName === "default") {
-        res.json({ status: 'ok', tag: [fileName], pages: ['home', 'about'] });
-    } else {
-        res.json({ status: 'ok', tag: [fileName], pages: [fileName] });
+    let tag = req.params.tag;
+    let dir = await readDir('data');
+    dir = dir.map(i => {
+        let filePath = path.join('data', i);
+        return filePath;
+    });
+    let pages = [];
+    for (let i = 0; i < dir.length; i++) {
+        let text = await readFile(dir[i], 'utf-8');
+        if (text.includes(tag)) {
+            let page = path.basename(dir[i], '.md');
+            pages.push(page);
+        }
     }
+    res.json({ status: 'ok', tag: 'tagName', pages });
 });
 
 app.get('*', (req, res) => {

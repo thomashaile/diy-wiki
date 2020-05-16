@@ -1,6 +1,6 @@
 # About
 
-This is a wiki.
+This is a Node Js class wiki.
 
 #about #default
 
