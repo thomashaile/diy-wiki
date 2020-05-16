@@ -1,3 +1,3 @@
 # Your New Page
 
-Write whatever you like here.amen
+This is my new page edited
